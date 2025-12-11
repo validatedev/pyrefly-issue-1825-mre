@@ -46,3 +46,26 @@ uv run pyrefly check
 - attrs 25.4.0
 - torch 2.9.1
 - pyrefly 0.45.2
+
+## Current Errors
+```
+ERROR Dataclass field `device` without a default may not follow dataclass field with a default [bad-class-definition]
+  --> test1.py:28:5
+   |
+28 |     device: torch.device = field(default=Factory(lambda: torch.device("cpu")))
+   |     ^^^^^^
+   |
+ERROR Dataclass field `name` without a default may not follow dataclass field with a default [bad-class-definition]
+  --> test2.py:23:5
+   |
+23 |     name: str
+   |     ^^^^
+   |
+ERROR Dataclass field `device` without a default may not follow dataclass field with a default [bad-class-definition]
+  --> test4.py:27:5
+   |
+27 |     device: torch.device = field(default=Factory(lambda: torch.device("cpu")))
+   |     ^^^^^^
+   |
+ INFO 3 errors
+```
