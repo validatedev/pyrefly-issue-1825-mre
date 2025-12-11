@@ -1,8 +1,14 @@
-"""Minimum reproducible example for pyrefly issue #1825.
+"""Pyrefly issue #1825: attrs class with a torch.device Factory default.
 
-This demonstrates the attrs incompatibility when using Field with lambda defaults.
-Pyrefly incorrectly treats attrs classes as dataclasses and throws:
-"Dataclass field without a default may not follow dataclass field with a default"
+Layout (valid in attrs):
+- name (required)
+- hidden_size (default)
+- device (Factory default torch.device("cpu"))
+- learning_rate (default)
+
+Expected: attrs accepts this layout.
+Actual: pyrefly reports device as "dataclass field without a default may not follow
+dataclass field with a default" even though a default is provided.
 """
 
 import torch

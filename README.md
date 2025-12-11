@@ -4,16 +4,28 @@ Minimum reproducible example for [Pyrefly Issue #1825](https://github.com/facebo
 
 ## The Bug
 
-Pyrefly incorrectly treats `attrs` classes as dataclasses and throws a false positive error when using `Field` with lambda defaults:
+Pyrefly incorrectly treats `attrs` classes as dataclasses (or this is expected behavior? I don't know 😕) and throws false positives when `Factory` defaults are used.
 
-```
-ERROR Dataclass field `device` without a default may not follow dataclass field with a default [bad-class-definition]
-```
+## Test Layouts (see `test*.py`)
+
+- `test1.py`: required field followed by defaults, then `Factory` `torch.device` default.  
+  - **Expected:** attrs accepts this layout.  
+  - **Actual:** Pyrefly flags `device` as missing a default.
+
+- `test2.py`: `Factory` default first, then required `name`, then other defaults.  
+  - **Expected:** attrs accepts this layout.  
+  - **Actual:** Pyrefly flags `name` as following a default without its own.
+
+- `test3.py`: control — every field has a default (no errors).  
+  - **Expected/Actual:** passes.
+
+- `test4.py`: several defaults followed by `Factory` `torch.device`.  
+  - **Expected:** attrs allows this layout.  
+  - **Actual:** Pyrefly flags `device` as missing a default.
 
 ## Reproduction
-**Expected:** No error — this is valid `attrs` usage per [attrs documentation](https://www.attrs.org/en/stable/init.html#defaults).
-
-**Actual:** Pyrefly reports `[bad-class-definition]` error.
+**Expected:** No errors for any layout.  
+**Actual:** Pyrefly reports `[bad-class-definition]` errors for the cases above.
 
 ## Setup
 
