@@ -1,0 +1,21 @@
+[project]
+name = "pyrefly-issue-1825-mre"
+version = "0.1.0"
+description = "Minimal reproducible example for Pyrefly Issue #1825 - attrs Field with lambda defaults incompatibility"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "attrs>=25.4.0",
+    "torch>=2.9.1",
+]
+
+[tool.pyrefly]
+project-includes = [
+    "**/*.py*",
+    "**/*.ipynb",
+]
+
+[dependency-groups]
+dev = [
+    "pyrefly>=0.45.2",
+]
