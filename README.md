@@ -45,16 +45,16 @@ Same root cause as Bug B. Pyrefly sees the type annotation instead of the field 
 
 | File | Description | Pyrefly Result |
 |------|-------------|----------------|
-| `test_factory_defaults.py` | `torch.device` with `default=Factory(...)` | 3 errors (Bug A) |
+| `test_factory_defaults.py` | `torch.device` with `default=Factory(...)` | 4 errors (Bug A) |
 | `test_factory_defaults_control.py` | Control case (standard order) | 0 errors ✓ |
-| `test_field_default_decorator.py` | `@field.default` decorator | 4 errors (Bug B) |
+| `test_field_default_decorator.py` | `@field.default` decorator | 2 errors (Bug B) |
 | `test_field_validator_decorator.py` | `@field.validator` decorator | 4 errors (Bug C) |
 | `test_validator_callable.py` | Callable validators (non-decorator) | 0 errors ✓ |
 | `test_validator_builtin.py` | Built-in validators | 0 errors ✓ |
 | `test_converter.py` | Converter functions | 0 errors ✓ |
 | `test_frozen_mutable.py` | `@frozen` and `@mutable` decorators | 1 error (correct behavior) |
 
-**Total: 12 errors** (11 false positives + 1 correct detection)
+**Total: 11 errors** (10 false positives + 1 correct detection)
 
 ## Reproduction
 
@@ -76,27 +76,17 @@ uv run pyrefly check
 
 ```
 ERROR Dataclass field `device` without a default may not follow dataclass field with a default [bad-class-definition]
-  --> test_factory_defaults.py
+  --> test_factory_defaults.py (x2: ModelConfig, AllFactoryDefaultsExceptName)
 ERROR Missing argument `device` in function `ModelConfig.__init__` [missing-argument]
   --> test_factory_defaults.py
 ERROR Missing argument `device` in function `AllFactoryDefaults.__init__` [missing-argument]
   --> test_factory_defaults.py
 ERROR Object of class `dict` has no attribute `default` [missing-attribute]
   --> test_field_default_decorator.py
-ERROR Object of class `int` has no attribute `default` [missing-attribute]
-  --> test_field_default_decorator.py
 ERROR Missing argument `a` in function `C.__init__` [missing-argument]
   --> test_field_default_decorator.py
-ERROR Missing argument `x` in function `DependentDefault.__init__` [missing-argument]
-  --> test_field_default_decorator.py
 ERROR Object of class `int` has no attribute `validator` [missing-attribute]
-  --> test_field_validator_decorator.py
-ERROR Object of class `int` has no attribute `validator` [missing-attribute]
-  --> test_field_validator_decorator.py
-ERROR Object of class `int` has no attribute `validator` [missing-attribute]
-  --> test_field_validator_decorator.py
-ERROR Object of class `int` has no attribute `validator` [missing-attribute]
-  --> test_field_validator_decorator.py
+  --> test_field_validator_decorator.py (x4)
 ERROR Cannot set field `value` [read-only]
   --> test_frozen_mutable.py
 ```
@@ -110,9 +100,9 @@ ERROR Cannot set field `value` [read-only]
 
 ## References
 
-- [attrs documentation - Examples](https://www.attrs.org/en/stable/examples.html)
-- [attrs documentation - API Reference](https://www.attrs.org/en/stable/api.html)
-- [attrs documentation - Type Checking (Pyright/mypy)](https://www.attrs.org/en/stable/types.html)
+- [attrs documentation - Examples](https://www.attrs.org/en/25.4.0/examples.html)
+- [attrs documentation - API Reference](https://www.attrs.org/en/25.4.0/api.html)
+- [attrs documentation - Type Checking (Pyright/mypy)](https://www.attrs.org/en/25.4.0/types.html)
 - [Pyrefly Issue #1825](https://github.com/facebook/pyrefly/issues/1825)
 
 ## Root Cause Analysis

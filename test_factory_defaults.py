@@ -13,8 +13,8 @@ Notes:
 - This MRE only tests torch; the underlying issue may be specific to `torch.device`
   (or more generally to factories that return opaque / third-party types).
 
-Docs: https://www.attrs.org/en/stable/api.html#attrs.Factory
-      https://www.attrs.org/en/stable/examples.html#defaults
+Docs: https://www.attrs.org/en/25.4.0/api.html#attrs.Factory
+      https://www.attrs.org/en/25.4.0/examples.html#defaults
 
 Related: https://github.com/facebook/pyrefly/issues/1825
 """
@@ -51,9 +51,10 @@ class ModelConfigReordered:
     learning_rate: float = 0.001
 
 
-# Example 3: All fields use Factory (still fails in pyrefly)
-# Pyrefly error: "Dataclass field `device` without a default may not follow..."
-# This is false positive - Factory() IS a valid default
+# Example 3: All fields use Factory
+# The class definition itself passes pyrefly (no ordering issue since device is first).
+# However, the call site AllFactoryDefaults() triggers missing-argument because pyrefly
+# doesn't recognize the torch.device Factory default.
 @define
 class AllFactoryDefaults:
     """All fields use Factory defaults."""
@@ -62,6 +63,20 @@ class AllFactoryDefaults:
     name: str = field(default=Factory(lambda: "default_model"))
     hidden_size: int = field(default=Factory(lambda: 768))
     learning_rate: float = field(default=Factory(lambda: 0.001))
+
+# Example 3b: torch.device Factory after a regular default
+# Pyrefly error: "Dataclass field `device` without a default may not follow..."
+# This confirms pyrefly doesn't recognize torch.device Factory as a default,
+# even when preceded by a regular (non-Factory) default.
+@define
+class AllFactoryDefaultsExceptName:
+    """torch.device Factory after a regular default - triggers pyrefly error."""
+
+    name: str = field(default=None)
+    device: torch.device = field(default=Factory(lambda: torch.device("cpu")))
+    hidden_size: int = field(default=Factory(lambda: 768))
+    learning_rate: float = field(default=Factory(lambda: 0.001))
+
 
 
 # Example 4: Using factory= shorthand (works fine)

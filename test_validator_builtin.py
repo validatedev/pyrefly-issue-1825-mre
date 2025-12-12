@@ -2,7 +2,7 @@
 
 attrs ships with many built-in validators. Testing if pyrefly handles them.
 
-Docs: https://www.attrs.org/en/stable/api.html#validators
+Docs: https://www.attrs.org/en/25.4.0/api.html#validators
 
 Related: https://github.com/facebook/pyrefly/issues/1825
 """

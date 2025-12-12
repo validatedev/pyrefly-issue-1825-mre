@@ -13,8 +13,8 @@ Pyrefly errors:
 The issue: pyrefly sees `a: dict = field()` and thinks `a` has type `dict`.
 In reality, `field()` returns a field descriptor that has `.default` method.
 
-Docs: https://www.attrs.org/en/stable/examples.html#defaults
-      https://www.attrs.org/en/stable/init.html#defaults
+Docs: https://www.attrs.org/en/25.4.0/examples.html#defaults
+      https://www.attrs.org/en/25.4.0/init.html#defaults
 
 Related: https://github.com/facebook/pyrefly/issues/1825
 """
@@ -22,7 +22,7 @@ Related: https://github.com/facebook/pyrefly/issues/1825
 from attrs import define, field, Factory
 
 
-# Example from attrs docs: https://www.attrs.org/en/stable/init.html#defaults
+# Example from attrs docs: https://www.attrs.org/en/25.4.0/init.html#defaults
 # Pyrefly errors:
 #   - "Object of class `dict` has no attribute `default`"
 #   - "Missing argument `a` in function `C.__init__`"
@@ -38,24 +38,7 @@ class C:
         return {"key": "value"}
 
 
-# Example with default depending on other attributes
-# Pyrefly error: "Object of class `int` has no attribute `default`"
-@define
-class DependentDefault:
-    x: int = field()
-    y: int = 1
-
-    @x.default
-    def _default_y(self):
-        return self.x + 1
-
-    z: list = field(factory=list)
-
-
 # Verify all work at runtime
 if __name__ == "__main__":
     c = C()
     print(f"C(): {c}")
-
-    d = DependentDefault()
-    print(f"DependentDefault(): {d}")

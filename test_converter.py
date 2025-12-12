@@ -2,8 +2,8 @@
 
 attrs supports converter functions that transform input values.
 
-Docs: https://www.attrs.org/en/stable/examples.html#conversion
-      https://www.attrs.org/en/stable/api.html#converters
+Docs: https://www.attrs.org/en/25.4.0/examples.html#conversion
+      https://www.attrs.org/en/25.4.0/api.html#converters
 
 Related: https://github.com/facebook/pyrefly/issues/1825
 """

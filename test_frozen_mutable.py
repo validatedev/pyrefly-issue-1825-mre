@@ -3,9 +3,9 @@
 attrs provides @frozen for immutable classes and @mutable as an alias for @define.
 Testing if pyrefly recognizes these decorators.
 
-Docs: https://www.attrs.org/en/stable/api.html#attrs.frozen
-      https://www.attrs.org/en/stable/api.html#attrs.mutable
-      https://www.attrs.org/en/stable/examples.html#immutability
+Docs: https://www.attrs.org/en/25.4.0/api.html#attrs.frozen
+      https://www.attrs.org/en/25.4.0/api.html#attrs.mutable
+      https://www.attrs.org/en/25.4.0/examples.html#immutability
 
 Related: https://github.com/facebook/pyrefly/issues/1825
 """

@@ -14,8 +14,8 @@ In reality, during class definition, `field()` returns a field descriptor
 that has `.validator` method. The type annotation `int` describes the
 runtime type of the attribute value, not the class-level descriptor.
 
-Docs: https://www.attrs.org/en/stable/examples.html#validators
-      https://www.attrs.org/en/stable/init.html#validators
+Docs: https://www.attrs.org/en/25.4.0/examples.html#validators
+      https://www.attrs.org/en/25.4.0/init.html#validators
 
 Related: https://github.com/facebook/pyrefly/issues/1825
 """

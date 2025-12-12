@@ -3,8 +3,8 @@
 attrs supports validators as callable functions passed to field().
 This pattern doesn't use the decorator syntax that triggers Bug C.
 
-Docs: https://www.attrs.org/en/stable/examples.html#validators
-      https://www.attrs.org/en/stable/api.html#validators
+Docs: https://www.attrs.org/en/25.4.0/examples.html#validators
+      https://www.attrs.org/en/25.4.0/api.html#validators
 
 Related: https://github.com/facebook/pyrefly/issues/1825
 """
