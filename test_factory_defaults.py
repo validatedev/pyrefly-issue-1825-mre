@@ -1,14 +1,17 @@
-"""Pyrefly Bug A: Factory() and factory= defaults not recognized.
+"""Pyrefly Bug A: `torch.device` + `default=Factory(...)` not recognized as a default.
 
-attrs allows Factory() for mutable default values. Pyrefly incorrectly reports
-"Dataclass field without a default may not follow dataclass field with a default"
-even when Factory() provides a valid default.
+In this repository, pyrefly reports a dataclass-style ordering error when a field
+uses `default=Factory(...)` and the factory callable produces a `torch.device`.
+This then cascades into missing-argument errors at call sites.
 
-Key issue: Pyrefly doesn't recognize Factory() as providing a default value.
-- Factory() is a valid default mechanism for mutable types
-- field(factory=list) is syntactic sugar for field(default=Factory(list))
-- attrs enforces the same ordering as dataclasses (mandatory before defaults)
-  UNLESS using kw_only=True
+Notes:
+- `Factory()` is a valid attrs default mechanism.
+- attrs enforces the same ordering rule as dataclasses (mandatory before defaults),
+  unless using `kw_only=True`.
+- In this repo, `field(factory=list)` / `field(factory=dict)` works and does not
+  trigger Bug A; the failing cases are specifically the ones returning `torch.device`.
+- This MRE only tests torch; the underlying issue may be specific to `torch.device`
+  (or more generally to factories that return opaque / third-party types).
 
 Docs: https://www.attrs.org/en/stable/api.html#attrs.Factory
       https://www.attrs.org/en/stable/examples.html#defaults
@@ -20,7 +23,7 @@ import torch
 from attrs import define, field, Factory
 
 
-# Example 1: Factory default - pyrefly doesn't recognize it as a default
+# Example 1: torch.device Factory default - pyrefly doesn't recognize it as a default
 # Pyrefly error: "Dataclass field `device` without a default may not follow..."
 # This is false positive - Factory() IS a valid default
 @define
@@ -35,7 +38,8 @@ class ModelConfig:
 
 # Example 2: Required kw_only field after Factory default
 # attrs allows kw_only required fields after defaults (see docs link above)
-# This is VALID attrs code but pyrefly may not recognize Factory as a default
+# This is VALID attrs code; it is included to show that ordering rules can be relaxed
+# for required keyword-only attributes.
 # see https://www.attrs.org/en/25.4.0/examples.html#keyword-only-attributes
 @define
 class ModelConfigReordered:
@@ -49,6 +53,7 @@ class ModelConfigReordered:
 
 # Example 3: All fields use Factory (still fails in pyrefly)
 # Pyrefly error: "Dataclass field `device` without a default may not follow..."
+# This is false positive - Factory() IS a valid default
 @define
 class AllFactoryDefaults:
     """All fields use Factory defaults."""
@@ -59,7 +64,7 @@ class AllFactoryDefaults:
     learning_rate: float = field(default=Factory(lambda: 0.001))
 
 
-# Example 4: Using factory= shorthand (same issue)
+# Example 4: Using factory= shorthand (works fine)
 @define
 class FactoryShorthand:
     """Using factory= argument instead of default=Factory()."""

@@ -4,18 +4,23 @@ Minimum reproducible example for [Pyrefly Issue #1825](https://github.com/facebo
 
 ## Summary
 
-Pyrefly has **incomplete attrs support**, treating attrs classes as dataclasses and missing key attrs-specific features. This results in false positive errors for valid attrs code.
+Pyrefly has **incomplete attrs support**, resulting in false positive errors for valid attrs code. In this MRE, the false positives include:
+- a `torch.device` field using `default=Factory(...)` not being recognized as having a default (Bug A)
+- decorator-based defaults via `@field.default` not being recognized (Bug B)
+- decorator-based validators via `@field.validator` not being recognized (Bug C)
 
 ## Bug Categories
 
-### Bug A: `Factory()` / `factory=` defaults not recognized
+### Bug A: `default=Factory(...)` for `torch.device` not recognized as a default
 
 **File:** `test_factory_defaults.py`
 
-Pyrefly doesn't recognize `Factory()` or `factory=` as valid default mechanisms. It incorrectly reports:
+In this repository, pyrefly fails to treat a `default=Factory(...)` as a default when the factory callable produces a `torch.device`. It incorrectly reports:
 - `"Dataclass field without a default may not follow dataclass field with a default"`
 
-**attrs behavior:** `Factory()` is the standard way to provide mutable defaults (lists, dicts, etc.) to avoid the classic Python mutable default argument bug.
+**attrs behavior:** `Factory()` is a standard way to provide dynamic defaults (including mutable defaults like lists/dicts).
+
+**Note:** This MRE only tests torch; this may be specific to `torch.device` (or more generally to factories that return opaque / third-party types). In contrast, `field(factory=list)` / `field(factory=dict)` works in this repo, and a control case using `Factory(lambda: "cpu")` also passes.
 
 ### Bug B: `@field.default` decorator not recognized
 
@@ -40,7 +45,7 @@ Same root cause as Bug B. Pyrefly sees the type annotation instead of the field 
 
 | File | Description | Pyrefly Result |
 |------|-------------|----------------|
-| `test_factory_defaults.py` | `Factory()` and `factory=` patterns | 3 errors (Bug A) |
+| `test_factory_defaults.py` | `torch.device` with `default=Factory(...)` | 3 errors (Bug A) |
 | `test_factory_defaults_control.py` | Control case (standard order) | 0 errors ✓ |
 | `test_field_default_decorator.py` | `@field.default` decorator | 4 errors (Bug B) |
 | `test_field_validator_decorator.py` | `@field.validator` decorator | 4 errors (Bug C) |
@@ -71,29 +76,29 @@ uv run pyrefly check
 
 ```
 ERROR Dataclass field `device` without a default may not follow dataclass field with a default [bad-class-definition]
-  --> test_factory_defaults.py:32:5
+  --> test_factory_defaults.py
 ERROR Missing argument `device` in function `ModelConfig.__init__` [missing-argument]
-  --> test_factory_defaults.py:74:21
+  --> test_factory_defaults.py
 ERROR Missing argument `device` in function `AllFactoryDefaults.__init__` [missing-argument]
-  --> test_factory_defaults.py:80:28
+  --> test_factory_defaults.py
 ERROR Object of class `dict` has no attribute `default` [missing-attribute]
-  --> test_field_default_decorator.py:38:6
+  --> test_field_default_decorator.py
 ERROR Object of class `int` has no attribute `default` [missing-attribute]
-  --> test_field_default_decorator.py:50:6
+  --> test_field_default_decorator.py
 ERROR Missing argument `a` in function `C.__init__` [missing-argument]
-  --> test_field_default_decorator.py:59:10
+  --> test_field_default_decorator.py
 ERROR Missing argument `x` in function `DependentDefault.__init__` [missing-argument]
-  --> test_field_default_decorator.py:62:25
+  --> test_field_default_decorator.py
 ERROR Object of class `int` has no attribute `validator` [missing-attribute]
-  --> test_field_validator_decorator.py:32:6
+  --> test_field_validator_decorator.py
 ERROR Object of class `int` has no attribute `validator` [missing-attribute]
-  --> test_field_validator_decorator.py:44:6
+  --> test_field_validator_decorator.py
 ERROR Object of class `int` has no attribute `validator` [missing-attribute]
-  --> test_field_validator_decorator.py:57:6
+  --> test_field_validator_decorator.py
 ERROR Object of class `int` has no attribute `validator` [missing-attribute]
-  --> test_field_validator_decorator.py:62:6
+  --> test_field_validator_decorator.py
 ERROR Cannot set field `value` [read-only]
-  --> test_frozen_mutable.py:61:9
+  --> test_frozen_mutable.py
 ```
 
 ## Environment
@@ -112,9 +117,11 @@ ERROR Cannot set field `value` [read-only]
 
 ## Root Cause Analysis
 
-The core issue appears to be that pyrefly treats `x: int = field()` as if `x` has type `int` at class definition time. In reality:
+Bugs B/C appear to stem from pyrefly treating `x: int = field()` as if `x` has type `int` at class definition time. In reality:
 
 1. **During class definition:** `field()` returns a field descriptor object with methods like `.default` and `.validator`
 2. **At runtime:** After `@define` processes the class, `x` becomes an instance attribute with type `int`
 
 Pyrefly needs to understand that within an attrs-decorated class body, `field()` returns a special descriptor, not the annotated type. This is similar to how mypy and Pyright handle attrs via plugins.
+
+Bug A is different: the error indicates pyrefly is treating an attrs field backed by `default=Factory(...)` as if it had no default. In this MRE, that only reproduces for a factory producing `torch.device`.
