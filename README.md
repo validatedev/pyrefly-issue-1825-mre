@@ -60,7 +60,7 @@ Same root cause as Bug B. Pyrefly sees the type annotation instead of the field 
 
 ```bash
 # Install dependencies
-uv sync
+uv sync --group dev
 
 # Run the code (all tests work correctly at runtime)
 uv run python test_factory_defaults.py
